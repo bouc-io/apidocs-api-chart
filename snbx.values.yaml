@@ -1,0 +1,44 @@
+# Sandbox environment values for apidocs-api-chart
+# Only include values that differ from base or are required for sandbox
+
+image:
+  registry: ghcr.io/bouc-io
+  repository: application/apidocs/apidocs-api-server
+  tag: "latest"
+  pullPolicy: IfNotPresent
+  # tag will be managed by FluxCD, do not set here
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts: []
+  tls: []
+
+resources: {}
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+
+environment:
+  # Environment identity for telemetry labels. ${ENVIRONMENT_ID} is substituted from the
+  # manually-created cluster-vars ConfigMap by Flux postBuild (sandbox-config Kustomization).
+  ENVIRONMENT_ID: "${ENVIRONMENT_ID}"
+  NODE_ENV: "production"
+  PORT: 3000
+  LOG_LEVEL: "info"
+  SPEC_TTL_MS: 300000
+  SPEC_FETCH_TIMEOUT_MS: 5000
+  AGENT_API_URL: "http://agent-api-chart.default.svc.cluster.local:80"
+  MEMORY_API_URL: "http://memory-api-chart.default.svc.cluster.local:80"
+  ADMIN_API_URL: "http://admin-api-chart.default.svc.cluster.local:80"
+  PORTAL_API_URL: "http://portal-api-chart.default.svc.cluster.local:80"
+  CHATBOT_API_URL: "http://chatbot-api-chart.default.svc.cluster.local:80"
+  DISTILLER_API_URL: "http://memory-distiller-chart.default.svc.cluster.local:80"
