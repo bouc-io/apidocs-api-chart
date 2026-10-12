@@ -1,0 +1,28 @@
+{{ .Chart.Name }} {{ .Chart.AppVersion }} has been deployed.
+
+  Release:   {{ .Release.Name }}
+  Namespace: {{ .Release.Namespace }}
+  Chart:     {{ .Chart.Name }}-{{ .Chart.Version }}
+
+In the bouc.io cluster this chart is reconciled by FluxCD, and its values are
+supplied from generated ConfigMaps via `valuesFrom` — not the bundled
+*.values.yaml files directly. See the chart README for the value reference.
+
+Aggregated API docs are served at:
+  https://api.<CLUSTER_DOMAIN>/v1/api-docs
+
+That requires /v1/api-docs to be registered in BOTH the Istio
+boucio-api-virtualservice AND the oauth2-proxy upstreams list, for this
+environment. If the page redirect-loops, an upstream entry is missing its
+trailing-slash pair.
+
+Verify the rollout:
+  kubectl -n {{ .Release.Namespace }} get pods
+  kubectl -n {{ .Release.Namespace }} rollout status deploy/{{ include "apidocs-api-chart.fullname" . }}
+
+Check which upstream specs are reachable from inside the mesh:
+  kubectl -n {{ .Release.Namespace }} exec deploy/{{ include "apidocs-api-chart.fullname" . }} -c {{ .Chart.Name }} -- \
+    wget -qO- http://localhost:{{ .Values.environment.PORT }}/healthz
+
+Tail logs:
+  kubectl -n {{ .Release.Namespace }} logs -l app.kubernetes.io/instance={{ .Release.Name }} -f
